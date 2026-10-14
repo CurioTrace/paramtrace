@@ -8,6 +8,18 @@ response compared to a baseline.
 > permission to test (for example, in-scope bug bounty targets). You are responsible
 > for how you use it.
 
+## Why ParamTrace?
+
+Parameter discovery tools already exist (Arjun, x8, Param Miner for Burp). ParamTrace is a small, focused alternative:
+
+- **Single binary, no runtime.** Written in Rust, so there's no Python environment or Burp needed. It also builds and runs on Termux (Android).
+- **Noise-aware baseline.** It sends 3 random-parameter requests first to learn the normal status and size range, and `--tolerance` handles pages that change on every request.
+- **Reflection detection.** It flags parameters whose value appears in the response, even when status and size barely change.
+- **Fits your workflow.** Custom headers, GET and POST, proxy support (Caido or Burp), and JSON output you can pipe into other tools.
+- **Small and readable.** The whole tool is one source file, so it's easy to audit and extend.
+
+**When to use something else:** if you already live in Burp, Param Miner is a better fit. For batching many parameters per request, mature tools like Arjun or x8 are faster today. Batching is on the ParamTrace roadmap.
+
 ## How it works
 
 1. Sends 3 requests with random fake parameters to learn the "normal" response
