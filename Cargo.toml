@@ -1,0 +1,27 @@
+[package]
+name = "paramtrace"
+version = "0.2.0"
+edition = "2021"
+authors = ["CurioTrace"]
+description = "Fast HTTP parameter discovery for authorized security testing"
+license = "MIT"
+readme = "README.md"
+keywords = ["security", "bug-bounty", "recon", "http", "pentest"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+futures = "0.3"
+indicatif = "0.17"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "gzip", "http2"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+uuid = { version = "1", features = ["v4"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
