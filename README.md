@@ -40,7 +40,7 @@ cargo build --release
 cargo install --path .
 ```
 
-Works on Linux, macOS, Windows, and Termux (uses rustls, no OpenSSL needed).
+Tested on Termux (Android) and Kali NetHunter. It should build anywhere Rust does (uses rustls, no OpenSSL needed).
 
 ## Usage
 
