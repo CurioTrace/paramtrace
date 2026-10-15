@@ -35,11 +35,19 @@ git clone https://github.com/CurioTrace/paramtrace
 cd paramtrace
 cargo build --release
 # binary: target/release/paramtrace
+
+# optional: install it so you can just type `paramtrace`
+cargo install --path .
 ```
 
 Works on Linux, macOS, Windows, and Termux (uses rustls, no OpenSSL needed).
 
 ## Usage
+
+> The examples below assume `paramtrace` is on your PATH (see `cargo install --path .` above).
+> If you only ran `cargo build --release`, use `./target/release/paramtrace` instead.
+> If the command isn't found after installing, add Cargo's bin folder to your PATH:
+> `export PATH="$HOME/.cargo/bin:$PATH"`
 
 ```bash
 paramtrace -u https://example.com/search -w wordlists/common.txt
