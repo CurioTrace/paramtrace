@@ -71,6 +71,7 @@ paramtrace -u https://example.com/ -w words.txt -o out.json -f json
 | `--value` | Value sent for each parameter |
 | `--proxy` | Proxy URL (Caido, Burp) |
 | `-k, --insecure` | Skip TLS verification |
+| `-q, --quiet` | Hide the startup banner |
 | `-o, --output` / `-f, --format` | Save results as `text` or `json` |
 
 ## Limitations
