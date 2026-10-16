@@ -2,3 +2,4 @@
 *.log
 results*.txt
 results*.json
+wordlists/lab-test.txt
