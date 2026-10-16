@@ -1,3 +1,5 @@
+![ParamTrace banner](docs/banner.png)
+
 # ParamTrace
 
 Fast HTTP parameter discovery for bug bounty and authorized penetration testing.
