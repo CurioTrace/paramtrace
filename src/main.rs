@@ -81,6 +81,10 @@ struct Args {
     #[arg(long, default_value = concat!("paramtrace/", env!("CARGO_PKG_VERSION")))]
     user_agent: String,
 
+    /// Hide the startup banner
+    #[arg(short, long)]
+    quiet: bool,
+
     /// Write results to this file (overwrites)
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -153,6 +157,20 @@ impl Finding {
             self.reasons.join(", ")
         )
     }
+}
+
+const BANNER: &str = r#"
+╔═╗┌─┐┬─┐┌─┐┌┬┐╔╦╗┬─┐┌─┐┌─┐┌─┐
+╠═╝├─┤├┬┘├─┤│││ ║ ├┬┘├─┤│  ├┤
+╩  ┴ ┴┴└─┴ ┴┴ ┴ ╩ ┴└─┴ ┴└─┘└─┘"#;
+
+fn print_banner() {
+    eprintln!("{}", BANNER.cyan());
+    eprintln!(
+        "  v{} | by {}\n  github.com/CurioTrace/paramtrace\n",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_AUTHORS")
+    );
 }
 
 fn build_client(args: &Args) -> Result<Client> {
@@ -258,7 +276,9 @@ async fn main() -> Result<()> {
         bail!("URL must start with http:// or https://");
     }
 
-    println!("{}", "[*] ParamTrace".green());
+    if !args.quiet {
+        print_banner();
+    }
     println!("[!] Only scan targets you are authorized to test.");
     println!("[*] Target: {}", url);
     println!("[*] Method: {:?}", args.method);
