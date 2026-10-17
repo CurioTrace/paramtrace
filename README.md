@@ -74,6 +74,12 @@ paramtrace -u https://example.com/ -w words.txt -o out.json -f json
 | `-q, --quiet` | Hide the startup banner |
 | `-o, --output` / `-f, --format` | Save results as `text` or `json` |
 
+## Example result
+
+Tested against my own instance of a PortSwigger Web Security Academy lab: with a 6,454-entry wordlist (6,453 wrong names plus the real parameter `productId`), ParamTrace flagged only `productId`, with no false positives, in about 3 minutes at 10 threads. The server answered `400` both with and without the parameter, so a status-code-only check would have missed it. ParamTrace caught it by comparing response sizes.
+
+Speed depends heavily on the network, and parameter names are case-sensitive, so the wordlist must contain the exact name the server expects.
+
 ## Limitations
 
 - Tests one parameter per request (batching is planned).
