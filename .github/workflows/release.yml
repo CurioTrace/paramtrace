@@ -1,0 +1,73 @@
+name: Release binaries
+
+# Runs when you push a version tag (for example v0.4.0), or manually for an
+# existing tag from the Actions tab / `gh workflow run release.yml -f tag=v0.3.0`.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and attach binaries to (for example v0.3.0)"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    name: Make sure the release exists
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create release if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "ParamTrace $TAG" --generate-notes
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x86_64,   os: ubuntu-24.04,     ext: tar.gz, bin: paramtrace }
+          - { name: linux-aarch64,  os: ubuntu-24.04-arm, ext: tar.gz, bin: paramtrace }
+          - { name: macos-arm64,    os: macos-15,         ext: tar.gz, bin: paramtrace }
+          - { name: windows-x86_64, os: windows-2025,     ext: zip,    bin: paramtrace.exe }
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release --locked
+
+      - name: Package
+        shell: bash
+        run: |
+          DIR="paramtrace-${TAG}-${{ matrix.name }}"
+          mkdir "$DIR"
+          cp "target/release/${{ matrix.bin }}" README.md LICENSE "$DIR/"
+          if [ "${{ matrix.ext }}" = "zip" ]; then
+            7z a -tzip "$DIR.zip" "$DIR" > /dev/null
+          else
+            tar -czf "$DIR.tar.gz" "$DIR"
+          fi
+          FILE="$DIR.${{ matrix.ext }}"
+          (sha256sum "$FILE" 2>/dev/null || shasum -a 256 "$FILE") > "$FILE.sha256"
+          echo "ASSET=$FILE" >> "$GITHUB_ENV"
+
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "$ASSET" "$ASSET.sha256" --repo "$GITHUB_REPOSITORY" --clobber
