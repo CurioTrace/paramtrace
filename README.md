@@ -93,6 +93,15 @@ Speed depends heavily on the network, and parameter names are case-sensitive, so
 A small starter list is in `wordlists/common.txt`. For larger ones, see
 [SecLists](https://github.com/danielmiessler/SecLists).
 
+For real targets, download a larger list (about 6,000 names) and scan gently:
+
+```bash
+curl -L -o wordlists/burp-params.txt https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/burp-parameter-names.txt
+paramtrace -u https://example.com/page -w wordlists/burp-params.txt -t 5 --delay 100
+```
+
+**Parameter names are case-sensitive.** A server that expects `productId` will not react to `productid`, so ParamTrace can only find names that are in your wordlist with the exact spelling the target uses. Many lists are all lowercase, so check yours first, for example: `grep -c -x productId yourlist.txt`.
+
 ## License
 
 MIT
