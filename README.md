@@ -68,7 +68,7 @@ paramtrace -u https://example.com/ -w words.txt -o out.json -f json
 | `--timeout` | Request timeout in seconds (default 10) |
 | `--delay` | Delay per request in ms |
 | `--tolerance` | Ignore size differences up to N bytes (useful on dynamic pages) |
-| `--value` | Value sent for each parameter |
+| `--value` | Value sent for each parameter (values under 4 characters disable the reflection check) |
 | `--proxy` | Proxy URL (Caido, Burp) |
 | `-k, --insecure` | Skip TLS verification |
 | `-q, --quiet` | Hide the startup banner |

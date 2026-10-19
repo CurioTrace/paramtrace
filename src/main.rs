@@ -94,12 +94,21 @@ struct Args {
     format: OutputFormat,
 }
 
+/// Values shorter than this match page content by accident, so the
+/// "value reflected" check is switched off for them.
+const MIN_REFLECTION_LEN: usize = 4;
+
+fn reflection_check_enabled(value: &str) -> bool {
+    value.chars().count() >= MIN_REFLECTION_LEN
+}
+
 struct Ctx {
     client: Client,
     url: Url,
     method: HttpMethod,
     value: String,
     delay_ms: u64,
+    check_reflection: bool,
 }
 
 struct Probe {
@@ -234,7 +243,8 @@ async fn probe(ctx: &Ctx, name: &str) -> reqwest::Result<Probe> {
     let response = request.send().await?;
     let status = response.status().as_u16();
     let body = response.bytes().await?;
-    let reflected = String::from_utf8_lossy(&body).contains(ctx.value.as_str());
+    let reflected =
+        ctx.check_reflection && String::from_utf8_lossy(&body).contains(ctx.value.as_str());
 
     Ok(Probe {
         status,
@@ -294,12 +304,24 @@ async fn main() -> Result<()> {
         .clone()
         .unwrap_or_else(|| format!("pt{}", &Uuid::new_v4().simple().to_string()[..8]));
 
+    let check_reflection = reflection_check_enabled(&value);
+    if !check_reflection {
+        eprintln!(
+            "{}",
+            format!(
+                "[!] --value is shorter than {MIN_REFLECTION_LEN} characters, so the reflection check is off (short values match page content by accident)."
+            )
+            .yellow()
+        );
+    }
+
     let ctx = Arc::new(Ctx {
         client: build_client(&args)?,
         url,
         method: args.method,
         value,
         delay_ms: args.delay,
+        check_reflection,
     });
 
     println!("{}", "[*] Establishing baseline...".yellow());
@@ -405,6 +427,14 @@ mod tests {
             reflects: false,
             tolerance: 0,
         }
+    }
+
+    #[test]
+    fn short_values_disable_reflection_check() {
+        assert!(!reflection_check_enabled("1"));
+        assert!(!reflection_check_enabled("abc"));
+        assert!(reflection_check_enabled("abcd"));
+        assert!(reflection_check_enabled("pt1a2b3c4d"));
     }
 
     #[test]
