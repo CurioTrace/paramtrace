@@ -46,6 +46,8 @@ Tested on Termux (Android) and Kali NetHunter. It should build anywhere Rust doe
 
 ## Usage
 
+![ParamTrace demo](docs/demo.jpg)
+
 > The examples below assume `paramtrace` is on your PATH (see `cargo install --path .` above).
 > If you only ran `cargo build --release`, use `./target/release/paramtrace` instead.
 > If the command isn't found after installing, add Cargo's bin folder to your PATH:
