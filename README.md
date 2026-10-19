@@ -83,7 +83,7 @@ Speed depends heavily on the network, and parameter names are case-sensitive, so
 ## Limitations
 
 - Tests one parameter per request (batching is planned).
-- Pages with heavily changing content may need `--tolerance`.
+- On pages that change size on every request, the automatic tolerance can hide real changes smaller than the noise (status changes, larger size changes and reflection are still caught). Use `--tolerance 0` to compare exactly.
 - Does not follow redirects, so redirect differences count as findings.
 
 ## Wordlists

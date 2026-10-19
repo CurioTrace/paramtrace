@@ -61,9 +61,9 @@ struct Args {
     #[arg(long, default_value_t = 0)]
     delay: u64,
 
-    /// Allowed response-size difference (bytes) before a result counts as different
-    #[arg(long, default_value_t = 0)]
-    tolerance: usize,
+    /// Allowed response-size difference in bytes (default: measured from the baseline)
+    #[arg(long)]
+    tolerance: Option<usize>,
 
     /// Value sent for each parameter (random per run if omitted)
     #[arg(long)]
@@ -100,6 +100,16 @@ const MIN_REFLECTION_LEN: usize = 4;
 
 fn reflection_check_enabled(value: &str) -> bool {
     value.chars().count() >= MIN_REFLECTION_LEN
+}
+
+/// How many random-parameter requests are sent to learn what a "normal"
+/// response looks like.
+const BASELINE_SAMPLES: usize = 10;
+
+/// Pages that change size on every request get a tolerance based on how much
+/// the baseline responses varied.
+fn auto_tolerance(spread: usize) -> usize {
+    spread / 2
 }
 
 struct Ctx {
@@ -253,12 +263,12 @@ async fn probe(ctx: &Ctx, name: &str) -> reqwest::Result<Probe> {
     })
 }
 
-async fn establish_baseline(ctx: &Ctx, tolerance: usize) -> Result<Baseline> {
+async fn establish_baseline(ctx: &Ctx, tolerance: Option<usize>) -> Result<Baseline> {
     let mut statuses = HashSet::new();
     let mut lengths = Vec::new();
     let mut reflects = false;
 
-    for _ in 0..3 {
+    for _ in 0..BASELINE_SAMPLES {
         let fake = format!("pt_{}", Uuid::new_v4().simple());
         let p = probe(ctx, &fake)
             .await
@@ -268,12 +278,14 @@ async fn establish_baseline(ctx: &Ctx, tolerance: usize) -> Result<Baseline> {
         reflects |= p.reflected;
     }
 
+    let spread = lengths.iter().max().unwrap_or(&0) - lengths.iter().min().unwrap_or(&0);
+
     Ok(Baseline {
         statuses,
         min_len: *lengths.iter().min().unwrap_or(&0),
         max_len: *lengths.iter().max().unwrap_or(&0),
         reflects,
-        tolerance,
+        tolerance: tolerance.unwrap_or_else(|| auto_tolerance(spread)),
     })
 }
 
@@ -327,8 +339,8 @@ async fn main() -> Result<()> {
     println!("{}", "[*] Establishing baseline...".yellow());
     let baseline = Arc::new(establish_baseline(&ctx, args.tolerance).await?);
     println!(
-        "[*] Baseline | statuses: {:?} | size: {}-{}",
-        baseline.statuses, baseline.min_len, baseline.max_len
+        "[*] Baseline | statuses: {:?} | size: {}-{} | tolerance: {}",
+        baseline.statuses, baseline.min_len, baseline.max_len, baseline.tolerance
     );
 
     let pb = ProgressBar::new(params.len() as u64);
@@ -435,6 +447,13 @@ mod tests {
         assert!(!reflection_check_enabled("abc"));
         assert!(reflection_check_enabled("abcd"));
         assert!(reflection_check_enabled("pt1a2b3c4d"));
+    }
+
+    #[test]
+    fn auto_tolerance_follows_baseline_spread() {
+        assert_eq!(auto_tolerance(0), 0);
+        assert_eq!(auto_tolerance(1), 0);
+        assert_eq!(auto_tolerance(30), 15);
     }
 
     #[test]
