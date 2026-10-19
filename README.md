@@ -41,6 +41,8 @@ sudo cp paramtrace-*-linux-x86_64/paramtrace /usr/local/bin/
 
 Termux uses Android's C library, so the Linux binaries won't run there. Install from source instead: `cargo install --git https://github.com/CurioTrace/paramtrace`
 
+**Testing status:** the Linux aarch64 binary (Kali NetHunter) and the Termux source build have been tested by the author. The Linux x86_64, macOS and Windows binaries are built automatically on every release but have not been run by the author yet, so please [open an issue](https://github.com/CurioTrace/paramtrace/issues) if one doesn't work. The binaries are unsigned, so Windows or macOS may show a warning on first run; you can verify a download with its `.sha256` file.
+
 Or build from source:
 
 ```bash
