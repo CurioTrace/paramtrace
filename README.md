@@ -115,6 +115,12 @@ paramtrace -u https://example.com/page -w wordlists/burp-params.txt -t 5 --delay
 
 **Parameter names are case-sensitive.** A server that expects `productId` will not react to `productid`, so ParamTrace can only find names that are in your wordlist with the exact spelling the target uses. Many lists are all lowercase, so check yours first, for example: `grep -c -x productId yourlist.txt`.
 
+## Support
+
+If ParamTrace helped you on an assessment or bug bounty, please consider leaving a ⭐ (the **Star** button at the top of the repository page) to help others discover it.
+
+Bug reports and ideas are welcome in [Issues](https://github.com/CurioTrace/paramtrace/issues).
+
 ## License
 
 MIT
