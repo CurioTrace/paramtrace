@@ -3,3 +3,4 @@
 results*.txt
 results*.json
 wordlists/lab-test.txt
+wordlists/burp-params.txt
