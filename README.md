@@ -32,6 +32,17 @@ Parameter discovery tools already exist (Arjun, x8, Param Miner for Burp). Param
 
 ## Install
 
+Pre-built binaries (Linux x86_64 and aarch64, macOS Apple Silicon, Windows) are on the [Releases page](https://github.com/CurioTrace/paramtrace/releases), each with a `.sha256` checksum file. For example, on Linux (use the `aarch64` file for Kali NetHunter on a phone):
+
+```bash
+tar -xzf paramtrace-*-linux-x86_64.tar.gz
+sudo cp paramtrace-*-linux-x86_64/paramtrace /usr/local/bin/
+```
+
+Termux uses Android's C library, so the Linux binaries won't run there. Install from source instead: `cargo install --git https://github.com/CurioTrace/paramtrace`
+
+Or build from source:
+
 ```bash
 git clone https://github.com/CurioTrace/paramtrace
 cd paramtrace
