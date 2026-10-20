@@ -50,5 +50,24 @@ def dynamic():
     return build(extra_noise=True)
 
 
+# "/limited" answers normally for the first 20 requests, then returns
+# 429 Too Many Requests. Visit /limited/reset (or restart the server) to reset it.
+hits = {"n": 0}
+
+
+@app.route("/limited", methods=["GET", "POST"])
+def limited():
+    hits["n"] += 1
+    if hits["n"] > 20:
+        return Response("Too Many Requests", status=429, headers={"Retry-After": "60"})
+    return build()
+
+
+@app.route("/limited/reset")
+def limited_reset():
+    hits["n"] = 0
+    return "reset"
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000)

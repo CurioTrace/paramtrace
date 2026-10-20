@@ -353,6 +353,7 @@ async fn main() -> Result<()> {
     );
 
     let errors = Arc::new(AtomicUsize::new(0));
+    let rate_limited = Arc::new(AtomicUsize::new(0));
     let concurrency = args.threads.max(1);
 
     let mut results = stream::iter(params)
@@ -360,6 +361,7 @@ async fn main() -> Result<()> {
             let ctx = Arc::clone(&ctx);
             let baseline = Arc::clone(&baseline);
             let errors = Arc::clone(&errors);
+            let rate_limited = Arc::clone(&rate_limited);
             let pb = pb.clone();
             async move {
                 if ctx.delay_ms > 0 {
@@ -368,6 +370,10 @@ async fn main() -> Result<()> {
                 let outcome = probe(&ctx, &name).await;
                 pb.inc(1);
                 match outcome {
+                    Ok(p) if p.status == 429 => {
+                        rate_limited.fetch_add(1, Ordering::Relaxed);
+                        None
+                    }
                     Ok(p) => baseline.diff(&p).map(|reasons| Finding {
                         param: name,
                         status: p.status,
@@ -397,6 +403,17 @@ async fn main() -> Result<()> {
         println!(
             "{}",
             format!("[!] {error_count} requests failed (timeouts/connection errors); results may be incomplete").yellow()
+        );
+    }
+
+    let limited = rate_limited.load(Ordering::Relaxed);
+    if limited > 0 {
+        println!(
+            "{}",
+            format!(
+                "[!] {limited} responses were 429 Too Many Requests, so results may be incomplete. Lower --threads, add --delay, and check the target's rate-limit rules."
+            )
+            .yellow()
         );
     }
 
