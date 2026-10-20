@@ -1,6 +1,6 @@
 [package]
 name = "paramtrace"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["CurioTrace"]
 description = "Fast HTTP parameter discovery for authorized security testing"
