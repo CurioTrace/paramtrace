@@ -115,6 +115,21 @@ paramtrace -u https://example.com/page -w wordlists/burp-params.txt -t 5 --delay
 
 **Parameter names are case-sensitive.** A server that expects `productId` will not react to `productid`, so ParamTrace can only find names that are in your wordlist with the exact spelling the target uses. Many lists are all lowercase, so check yours first, for example: `grep -c -x productId yourlist.txt`.
 
+## FAQ
+
+### How does it handle rate limits?
+
+- `-t, --threads` limits how many requests are in flight at once (default 10).
+- `--delay N` waits N milliseconds before each request. It applies to every concurrent request, so more threads still means more requests per second overall.
+- `--timeout` stops a slow request from hanging the scan.
+- If the target answers `429 Too Many Requests`, ParamTrace does not report those responses as findings. It counts them and prints a warning at the end, because the results may be incomplete. Lower `--threads`, add `--delay`, and check the target's rules on request rates.
+
+It does not back off or retry automatically yet. In one of my own lab tests, `-t 3 --delay 150` ran at about 6 requests per second and `-t 10 --delay 0` at about 30, so speed depends heavily on the target and your connection.
+
+### Will it get parameter batching?
+
+Yes, it is the main planned feature: send many names in one request and narrow down when the response changes, which should need far fewer requests. ParamTrace is a hobby project, so there is no date.
+
 ## Support
 
 If ParamTrace helped you on an assessment or bug bounty, please consider leaving a ⭐ (the **Star** button at the top of the repository page) to help others discover it.
